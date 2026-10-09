@@ -18,4 +18,5 @@ Abra `index.html` no navegador ou sirva a pasta com qualquer servidor HTTP está
 
 - Defina `paymentUrl` e `partnerEmail` em `src/js/main.js` para ativar as integrações de pagamento e contato.
 - Preencha `data-video-url` no elemento `.video-frame` em `index.html` com uma URL de vídeo do YouTube ou Vimeo.
-- Atualize o progresso da campanha (`327` jovens e `32,7%`) no HTML conforme os dados confirmados pelo projeto.
+- Atualize as metas e os indicadores da campanha em `index.html` conforme os dados confirmados pelo projeto.
+- Inclua o CNPJ e os dados bancários na página quando essas informações estiverem disponíveis.

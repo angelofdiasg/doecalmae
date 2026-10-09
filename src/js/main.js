@@ -13,7 +13,7 @@ const paymentStatus = document.querySelector("#payment-status");
 const donationStatus = document.querySelector("#donation-status");
 const partnerStatus = document.querySelector("#partner-status");
 const customAmountInput = document.querySelector("#custom-amount");
-let selectedAmount = 1500;
+let selectedAmount = 50;
 let selectedPartnerAmount = null;
 
 function setSelectedAmount(amount) {
@@ -112,7 +112,7 @@ if (videoUrl) {
         : parsedUrl.searchParams.get("v");
 
     if (videoId) {
-      embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
+      embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
     }
   } else if (["vimeo.com", "www.vimeo.com"].includes(parsedUrl.hostname)) {
     const videoId = parsedUrl.pathname.split("/").filter(Boolean).pop();
@@ -127,6 +127,8 @@ if (videoUrl) {
     iframe.src = embedUrl;
     iframe.title = "Depoimentos do Calmaê Jovem";
     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.loading = "lazy";
     iframe.allowFullscreen = true;
     videoFrame.replaceChildren(iframe);
   } else {
