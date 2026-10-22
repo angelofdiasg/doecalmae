@@ -8,6 +8,7 @@
       name="description"
       content="Apadrinhe jovens estudantes e ajude a garantir seis meses de cuidado psicológico para alunos da rede pública."
     >
+    <meta name="calmae-api-base-url" content="">
     <title>Apadrinhe jovens estudantes | Calmaê Jovem</title>
     <link rel="icon" href="assets/LOGO_ONN.png" type="image/png">
     <link rel="stylesheet" href="src/css/styles.css">
@@ -154,12 +155,17 @@
               <h2 id="people-title">Você pode começar com <em>um jovem.</em></h2>
               <p class="lead">Apoie um jovem ou contribua com o valor que fizer sentido para você.</p>
             </div>
-            <div class="donation-panel">
+            <form class="donation-panel" id="donation-form">
               <div class="individual-sponsorship">
                 <span class="support-label">UM JOVEM · SEIS MESES</span>
                 <strong>R$ 1.500</strong>
                 <span>6 meses de acompanhamento psicológico</span>
               </div>
+              <fieldset class="donation-frequency">
+                <legend class="donation-label">FREQUÊNCIA DA DOAÇÃO</legend>
+                <label><input type="radio" name="frequency" value="once" checked> Única</label>
+                <label><input type="radio" name="frequency" value="monthly"> Mensal</label>
+              </fieldset>
               <span class="donation-label">ESCOLHA COMO QUER CONTRIBUIR</span>
               <div class="donation-amounts" role="group" aria-label="Escolha um valor de contribuição">
                 <button type="button" class="donation-choice selected" data-amount="50" aria-pressed="true">R$ 50</button>
@@ -170,11 +176,29 @@
               <label class="custom-amount-label" for="custom-amount">Outro valor</label>
               <div class="custom-amount">
                 <span aria-hidden="true">R$</span>
-                <input id="custom-amount" type="number" inputmode="numeric" min="1" step="1" placeholder="Digite um valor">
+                <input id="custom-amount" name="amount" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Digite um valor">
               </div>
-              <button class="button button-primary donation-submit" type="button" id="donation-submit">Quero contribuir <span aria-hidden="true">→</span></button>
+              <fieldset class="donation-frequency payment-methods">
+                <legend class="donation-label">FORMA DE PAGAMENTO</legend>
+                <label><input type="radio" name="payment-method" value="PIX" checked> Pix</label>
+                <label><input type="radio" name="payment-method" value="BOLETO"> Boleto</label>
+                <label><input type="radio" name="payment-method" value="CREDIT_CARD"> Cartão</label>
+              </fieldset>
+              <p class="payment-method-note" id="payment-method-note">O pagamento será concluído no ambiente seguro do Asaas.</p>
+              <div class="donor-details">
+                <label for="donor-name">Nome completo</label>
+                <input id="donor-name" name="name" type="text" autocomplete="name" maxlength="120" required>
+                <label for="donor-email">E-mail</label>
+                <input id="donor-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+                <label for="donor-cpf">CPF ou CNPJ</label>
+                <input id="donor-cpf" name="cpfCnpj" type="text" inputmode="numeric" autocomplete="off" maxlength="18" required>
+                <label for="donor-phone">Celular com DDD</label>
+                <input id="donor-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" required>
+              </div>
+              <button class="button button-primary donation-submit" type="submit" id="donation-submit">Quero contribuir <span aria-hidden="true">→</span></button>
               <p class="donation-status" id="donation-status" role="status" aria-live="polite"></p>
-            </div>
+              <p class="donation-privacy">Seus dados serão enviados ao Asaas apenas para processar a doação. Não armazenamos dados de cartão.</p>
+            </form>
           </div>
           <article class="campaign-goal">
             <div>
