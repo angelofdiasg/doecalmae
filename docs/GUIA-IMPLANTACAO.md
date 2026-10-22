@@ -2,7 +2,7 @@
 
 Este guia conduz a publicação do site e da API de doações em dois ambientes isolados:
 
-- **HML (homologação):** site Vercel de teste, API Railway de teste, banco Neon de teste e credenciais do Asaas Sandbox.
+- **HML (homologação):** deployment Preview do projeto Vercel existente, API Railway de teste, banco Neon de teste e credenciais do Asaas Sandbox.
 - **PRD (produção):** site Vercel público, API Railway de produção, banco Neon de produção e credenciais live do Asaas.
 
 Não reutilize banco, chave de API ou token de webhook entre HML e PRD. As URLs e os dados de teste também não devem ser usados para receber doações reais.
@@ -22,7 +22,7 @@ Use autenticação com MFA nos provedores. Nunca coloque chaves, tokens, strings
 
 ## 2. Como a implantação está configurada
 
-- A raiz do repositório é o front-end estático. `npm run build` grava em `dist/` e incorpora a URL da API recebida pela variável `CALMAE_API_BASE_URL`.
+- A raiz do repositório é o front-end estático. `npm run build` grava em `dist/` e incorpora a URL da API recebida pela variável `CALMAE_API_BASE_URL`. Um único projeto Vercel pode usar valores diferentes nos ambientes Production e Preview.
 - A pasta `api/` contém o serviço Node.js. O Railway deve configurá-la como Root Directory.
 - `npm start` executa a migração SQL antes de iniciar a API (`prestart`).
 - A API usa a `DATABASE_URL` do Neon, guarda o estado e os identificadores de cobrança e mantém os dados pessoais somente no Asaas.
@@ -103,26 +103,26 @@ Abra um Pull Request do novo branch para `homologacao`. Depois dos testes e apro
 
 Não use aspas em torno dos valores ao cadastrá-los no painel. Depois de salvar, aguarde o deploy e confira os logs e o health check.
 
-### 4.3 Vercel — site de homologação
+### 4.3 Vercel — Preview de homologação
 
-Use um projeto Vercel independente para HML para que o domínio permitido pela API seja estável e exato.
+Use o projeto Vercel já conectado ao repositório. O Vercel cria deployments Preview para os branches que não são o branch de produção; não é necessário criar um segundo projeto apenas para HML.
 
-1. Importe o repositório GitHub `angelofdiasg/doecalmae`.
-2. Nomeie o projeto `doecalmae-hml`.
-3. Configure:
+1. Em **Project → Settings → Git**, mantenha `main` como **Production Branch**.
+2. Em **Project → Settings → Build and Deployment**, confirme:
    - **Framework Preset:** `Other`
    - **Root Directory:** `./`
-   - **Production Branch:** `homologacao`
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
    - **Install Command:** `npm ci`
-4. Em **Settings → Environment Variables**, crie `CALMAE_API_BASE_URL` com o domínio HTTPS público da API HML, sem barra final, por exemplo `https://doecalmae-api-hml.up.railway.app`. Selecione **Production** neste projeto: o branch `homologacao` é a publicação de produção deste projeto Vercel dedicado a HML.
-5. Publique e anote o domínio estável do projeto, por exemplo `https://doecalmae-hml.vercel.app`.
-6. Confirme que o valor de `FRONTEND_ORIGIN` no Railway HML corresponde exatamente a essa origem, incluindo `https://` e sem barra final. Se mudar o domínio, atualize a variável e faça redeploy da API.
+3. Em **Settings → Environment Variables**, crie `CALMAE_API_BASE_URL` para **Production** com o domínio HTTPS público da API PRD, sem barra final, por exemplo `https://doecalmae-api-prd.up.railway.app`.
+4. Crie outra variável `CALMAE_API_BASE_URL` para **Preview** com o domínio HTTPS da API HML, por exemplo `https://doecalmae-api-hml.up.railway.app`. Para esse fluxo simples, todas as Preview builds usam a API Sandbox HML; elas nunca apontam para a API PRD.
+5. Salve as variáveis e faça novo deployment, pois mudanças em variáveis só se aplicam a novos builds.
+6. No branch `homologacao`, abra o deployment no painel Vercel e copie a **Git Branch URL** (o alias estável que acompanha o último deployment desse branch), não a URL única de um commit. Cadastre essa origem exata em `FRONTEND_ORIGIN` no Railway HML e faça redeploy da API. Se alterar o nome do projeto, do branch ou o domínio, confirme novamente a Branch URL e atualize CORS.
+7. Os Preview deployments de branches de feature têm URLs próprias e o CORS da API HML não os aceita por padrão. Use-os para revisar o visual; teste doações no alias estável do branch `homologacao`. Não abra CORS para qualquer origem nem use `*`.
 
 ### 4.4 Asaas — Sandbox e webhook HML
 
-1. Entre/crie a conta Sandbox do Asaas e use apenas dados de teste.
+1. Entre/crie a conta Sandbox do Asaas e use apenas dados de teste. Se a mesma organização tiver ambientes Sandbox e live sob a mesma conta, mantenha chaves e webhooks de cada ambiente separados.
 2. Gere uma chave de API Sandbox no painel do Asaas. Cadastre-a em `ASAAS_API_KEY` no Railway HML.
 3. Gere um token secreto exclusivo para o webhook HML. Uma forma de criar um valor forte localmente é:
 
@@ -199,18 +199,18 @@ Só inicie esta etapa após HML estar aprovada, os dados institucionais conferid
 
 ### 6.3 Vercel — site de produção
 
-1. Crie outro projeto Vercel, por exemplo `doecalmae-prd`, ligado ao mesmo repositório.
-2. Configure a branch de produção como `main`.
-3. Use o mesmo comando de build e diretório de saída:
+1. Use o mesmo projeto Vercel já configurado em HML.
+2. Configure `main` como **Production Branch** (em **Settings → Git**).
+3. Confirme o mesmo comando de build e diretório de saída:
    - **Framework Preset:** `Other`
    - **Root Directory:** `./`
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
    - **Install Command:** `npm ci`
-4. Atribua o domínio público oficial do projeto a este projeto Vercel.
-5. Em **Environment Variables → Production**, configure `CALMAE_API_BASE_URL` com a origem HTTPS da API PRD, sem barra final.
-6. Faça redeploy de produção após configurar a variável.
-7. Confirme que `FRONTEND_ORIGIN` da API PRD é exatamente a origem do domínio público. Se a API for criada antes do domínio, volte ao Railway e corrija a variável antes de liberar o formulário.
+4. Atribua ou mantenha o domínio oficial do site nesse projeto Vercel; o domínio de produção continua associado aos deployments de `main`.
+5. Em **Settings → Environment Variables**, confirme `CALMAE_API_BASE_URL` em **Production** apontando à API PRD. O valor **Preview** continua apontando à API HML.
+6. Faça um novo deployment de produção depois de configurar variáveis ou domínio.
+7. Confirme que `FRONTEND_ORIGIN` da API PRD é exatamente a origem do domínio oficial, por exemplo `https://calmaejovem.org.br`, sem caminho nem barra final. Se o domínio mudar, atualize a variável Railway e faça redeploy da API.
 
 ### 6.4 Asaas — conta live e webhook PRD
 
@@ -224,7 +224,7 @@ Só inicie esta etapa após HML estar aprovada, os dados institucionais conferid
 
 | Nome | Onde configurar | Secreto? | Observação |
 |---|---|---:|---|
-| `CALMAE_API_BASE_URL` | Vercel, separado em cada projeto | Não | Variável de build do front-end; URL HTTPS do Railway correspondente ao ambiente |
+| `CALMAE_API_BASE_URL` | Um projeto Vercel: Production e Preview | Não | Production aponta à API PRD; Preview aponta à API HML |
 | `NODE_ENV` | Railway HML e PRD | Não | Use `production` nos serviços hospedados |
 | `FRONTEND_ORIGIN` | Railway HML e PRD | Não | Uma origem exata por API; protocolo `https://`, sem caminho/barra final |
 | `DATABASE_URL` | Railway HML e PRD | **Sim** | Connection string Neon; usar projeto HML/PRD correspondente |
@@ -233,7 +233,7 @@ Só inicie esta etapa após HML estar aprovada, os dados institucionais conferid
 | `ASAAS_WEBHOOK_TOKEN` | Railway e webhook Asaas de cada ambiente | **Sim** | Mesmo valor nos dois lados do mesmo webhook; tokens diferentes entre ambientes |
 | `PORT` | Railway | Não | Injetada pelo Railway; não criar manualmente |
 
-Não crie essas variáveis no front-end Vercel: apenas `CALMAE_API_BASE_URL` é usada no build do site. A chave Asaas, o token do webhook e `DATABASE_URL` ficam exclusivamente no Railway.
+No Vercel, crie apenas `CALMAE_API_BASE_URL`; ela é pública no código final do site e serve para o navegador encontrar a API. A chave Asaas, o token do webhook e `DATABASE_URL` ficam exclusivamente no Railway.
 
 ### `.env` local (opcional)
 
@@ -265,6 +265,9 @@ Para rodar a API em desenvolvimento, copie `api/.env.example` para `api/.env` e 
 ## 10. Links oficiais úteis
 
 - [Vercel — variáveis de ambiente](https://vercel.com/docs/projects/environment-variables)
+- [Vercel — ambientes Preview e Production](https://vercel.com/docs/deployments/environments)
+- [Vercel — URLs únicas e Git Branch URL](https://vercel.com/docs/deployments/generated-urls)
+- [Vercel — variáveis por branch Git](https://vercel.com/changelog/environments-variables-per-git-branch)
 - [Vercel — configurações de build e output](https://vercel.com/docs/deployments/configure-a-build)
 - [Railway — variáveis de ambiente](https://docs.railway.com/guides/variables)
 - [Railway — deploy de aplicação Node.js](https://docs.railway.com/guides/node)
