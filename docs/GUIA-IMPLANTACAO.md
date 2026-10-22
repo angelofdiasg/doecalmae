@@ -39,25 +39,32 @@ No GitHub, abra o repositório, selecione o branch `main` e crie o branch `homol
 
 ### 3.2 Salvar as alterações locais e enviá-las ao GitHub
 
-No PowerShell, a partir da raiz do repositório:
+**Para esta implantação inicial, as alterações já foram enviadas** para o branch remoto `feat/guia-implantacao-hml-prd` no commit `89df186`. Não repita o comando `git switch -c` para esse branch.
+
+Faça agora:
+
+1. No GitHub, abra `main` e crie o branch `homologacao` a partir dele, caso ainda não exista.
+2. Abra um Pull Request de `feat/guia-implantacao-hml-prd` para `homologacao` em <https://github.com/angelofdiasg/doecalmae/pull/new/feat/guia-implantacao-hml-prd>.
+3. Revise e aprove o Pull Request. Após o merge, conecte os serviços HML a `homologacao` conforme este guia.
+4. Depois de aprovar HML, abra um Pull Request de `homologacao` para `main`.
+
+Para futuras alterações, parta de `main` e use um novo branch com nome próprio. No PowerShell, a partir da raiz:
 
 ```powershell
 git status
 npm ci --prefix api
 npm test --prefix api
 
-git switch -c feat/guia-implantacao-asaas
-git add .gitignore README.md index.html src api package.json package-lock.json scripts docs/GUIA-IMPLANTACAO.md
+git switch main
+git pull --ff-only origin main
+git switch -c feat/minha-alteracao
+git add <arquivos-alterados>
 git diff --cached --check
-git commit -m "feat: prepare Asaas donation deployment"
-git push -u origin feat/guia-implantacao-asaas
+git commit -m "feat: descrever alteracao"
+git push -u origin feat/minha-alteracao
 ```
 
-Abra um Pull Request de `feat/guia-implantacao-asaas` para `homologacao`. Após revisão e merge, o Railway e o projeto HML da Vercel devem publicar esse branch.
-
-Depois de aprovar os testes em HML, abra outro Pull Request de `homologacao` para `main`. O merge em `main` publica a nova versão de produção. Não faça push direto para `main`.
-
-> Se as alterações já tiverem sido publicadas ou integradas, não crie outro branch com o mesmo conteúdo. Confira `git status` e os Pull Requests existentes antes de repetir os comandos.
+Abra um Pull Request do novo branch para `homologacao`. Depois dos testes e aprovação em HML, faça o merge de `homologacao` para `main`. Não faça push direto para `main`.
 
 ## 4. Criar o ambiente HML
 
